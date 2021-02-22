@@ -14,25 +14,27 @@ public class GameManager : MonoBehaviour
     public int score;
     private GameObject startStroke;
     private GameObject goalStroke;
-    private GameObject parentObject;
-    private GameObject moji;
+    private GameObject charcterObject;
+    
     //private GameObject complateChar;
     private List<GameObject> completeCharacters;
     private Canvas canvas;
-    private Text message;
-    private Text scoreboard;
+    
+    
     private string startName;
     private string goalName;
     private string[] characters;
     private int stage;
     public bool startFlag;
     public GameObject character;
+    public Text message;
+    public Text scoreboard;
 
     private void Awake()
     {
         instance = this;
-        characters = new string[] { "a", "i","u" };
-        stage = 0;
+        //characters = new string[] { "a", "i","u" };
+        //stage = 0;
         canvas = GameObject.FindWithTag("characterCanvas").GetComponent<Canvas>();
     }
 
@@ -41,17 +43,15 @@ public class GameManager : MonoBehaviour
     {
         score = 100;
         strokeOrder = 1;
-        parentObject = canvas.transform.Find(characters[stage]).gameObject;
-        
-        parentObject.SetActive(true);
+
+        //a,i,uなどのゲームオブジェクト
+        charcterObject = canvas.transform.Find(Scene.selectStage).gameObject;
+        charcterObject.SetActive(true);
 
         this.viewStartAndGoal();
+        scoreboard.text = "";
         startFlag = false;
-        
-        
-        message = GameObject.FindWithTag("Message").GetComponent<Text>();
-        moji = GameObject.FindWithTag("moji");
-        scoreboard = GameObject.Find("score").GetComponent<Text>();
+        //Debug.Log(Scene.selectStage);
     }
 
     public void startAct()
@@ -66,10 +66,9 @@ public class GameManager : MonoBehaviour
         message.text = "ゴール！";
         startStroke.SetActive(false);
         goalStroke.SetActive(false);
-        moji.GetComponent<SpriteRenderer>().enabled = false;
         startFlag = false;
 
-
+        charcterObject.SetActive(false);
         if (score >= 80)
         {
             scoreboard.text = "よくできました";
@@ -82,6 +81,8 @@ public class GameManager : MonoBehaviour
         {
             scoreboard.text = "がんばろう！";
         }
+
+        /* 連続してゲームをする場合の処理
         if(stage + 1 < characters.Length)
         {
 
@@ -91,8 +92,9 @@ public class GameManager : MonoBehaviour
             Vector3 scale = copied.transform.localScale;
             scale = new Vector3(scale.x / 2, scale.y / 2, scale.z);
             copied.transform.localScale = scale;
-            */
-            parentObject.SetActive(false);
+            
+
+            charcterObject.SetActive(false);
 
 
             foreach (Transform n in character.transform)
@@ -104,7 +106,7 @@ public class GameManager : MonoBehaviour
             stage++;
             character.GetComponent<NewBehaviourScript>().Restart();
             this.Start();
-        }
+        }*/
     }
 
     private void viewStartAndGoal()
@@ -113,8 +115,8 @@ public class GameManager : MonoBehaviour
         goalName = "goal_" + strokeOrder;
         
 
-        startStroke = parentObject.transform.Find(startName).gameObject;
-        goalStroke = parentObject.transform.Find(goalName).gameObject;
+        startStroke = charcterObject.transform.Find(startName).gameObject;
+        goalStroke = charcterObject.transform.Find(goalName).gameObject;
         startStroke.SetActive(true);
         goalStroke.SetActive(true);
     }
@@ -131,7 +133,13 @@ public class GameManager : MonoBehaviour
     public void overCharacter()
     {
         score -= 1;
-        //Debug.Log(score);
+        scoreboard.text = "がんばれ！がんばれ！";
+        Debug.Log(score);
+    }
+
+    public void enterCharacter()
+    {
+        scoreboard.text = "そのちょうし！そのちょうし！";
     }
 
 

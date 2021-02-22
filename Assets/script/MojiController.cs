@@ -55,7 +55,14 @@ public class MojiController : MonoBehaviour
         {
             GameManager.instance.overCharacter();
         }
-        
+    }
+
+    public void onPointerEnter()
+    {
+        if(Input.GetMouseButton(0) && GameManager.instance.startFlag)
+        {
+            GameManager.instance.enterCharacter();
+        }
     }
 
 }

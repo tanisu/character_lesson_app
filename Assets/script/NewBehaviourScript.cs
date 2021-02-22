@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-
 using System.Linq;
 
 public class NewBehaviourScript : MonoBehaviour
@@ -38,8 +36,6 @@ public class NewBehaviourScript : MonoBehaviour
     void Start()
     {
         lineRenderers = new List<LineRenderer>();
-        //paintArea.GetComponent<Painter>().Test();
-        lineColor = Color.cyan;
 
     }
 

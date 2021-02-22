@@ -54,7 +54,7 @@ public class Painter : MonoBehaviour
     {
         var dat = new PointerEventData(EventSystem.current);
         dat.position = Input.mousePosition;
-        Debug.Log($"GetPosition:{dat.position}");
+        //Debug.Log($"GetPosition:{dat.position}");
         var rect1 = GetComponent<RectTransform>();
         var pos1 = dat.position;
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect1, pos1,
@@ -80,7 +80,7 @@ public class Painter : MonoBehaviour
     /// </summary>
     public void LineTo(Vector3 start, Vector3 end, Color color)
     {
-        Debug.Log($"LineTo {start}");
+        //Debug.Log($"LineTo {start}");
         float x = start.x, y = start.y;
         // color of pixels
         Color[] wcolor = { color };

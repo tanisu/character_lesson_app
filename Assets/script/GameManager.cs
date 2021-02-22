@@ -15,7 +15,6 @@ public class GameManager : MonoBehaviour
     private GameObject startStroke;
     private GameObject goalStroke;
     private GameObject parentObject;
-    private GameObject aleart;
     private GameObject moji;
     //private GameObject complateChar;
     private List<GameObject> completeCharacters;
@@ -43,13 +42,13 @@ public class GameManager : MonoBehaviour
         score = 100;
         strokeOrder = 1;
         parentObject = canvas.transform.Find(characters[stage]).gameObject;
-        //parentObject = GameObject.Find(characters[stage]);
+        
         parentObject.SetActive(true);
 
         this.viewStartAndGoal();
         startFlag = false;
         
-        aleart = GameObject.FindWithTag("aleart");
+        
         message = GameObject.FindWithTag("Message").GetComponent<Text>();
         moji = GameObject.FindWithTag("moji");
         scoreboard = GameObject.Find("score").GetComponent<Text>();
@@ -57,14 +56,13 @@ public class GameManager : MonoBehaviour
 
     public void startAct()
     {
-        this.aleart.GetComponent<Renderer>().material.color = Color.yellow;
         message.text = "スタート！";
         startFlag = true;
     }
 
     public void goalAct()
     {
-        this.aleart.GetComponent<Renderer>().material.color = Color.green;
+        
         message.text = "ゴール！";
         startStroke.SetActive(false);
         goalStroke.SetActive(false);
@@ -87,13 +85,13 @@ public class GameManager : MonoBehaviour
         if(stage + 1 < characters.Length)
         {
 
-
+            /*
             GameObject copied = Object.Instantiate(character) as GameObject;
             Destroy(copied.GetComponent<NewBehaviourScript>());
             Vector3 scale = copied.transform.localScale;
             scale = new Vector3(scale.x / 2, scale.y / 2, scale.z);
             copied.transform.localScale = scale;
-            //completeCharacters.Add(copied);
+            */
             parentObject.SetActive(false);
 
 
@@ -133,7 +131,7 @@ public class GameManager : MonoBehaviour
     public void overCharacter()
     {
         score -= 1;
-        Debug.Log(score);
+        //Debug.Log(score);
     }
 
 

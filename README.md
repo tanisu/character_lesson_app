@@ -1,0 +1,2 @@
+# character_lesson_app
+unityのひらがなアプリ練習用

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class NewBehaviourScript : MonoBehaviour
+public class StrokeManager : MonoBehaviour
 {
     /// <summary>
     /// 線コンポーネントのリスト
@@ -81,6 +81,12 @@ public class NewBehaviourScript : MonoBehaviour
     {
         this.AddLineObject();
     }
+
+    public void stopStroke()
+    {
+        Destroy(this);
+    }
+ 
 
     /// <summary>
     /// 線コンポーネント初期化

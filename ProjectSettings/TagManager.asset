@@ -9,6 +9,7 @@ TagManager:
   - moji
   - PaintArea
   - characterCanvas
+  - characters
   layers:
   - Default
   - TransparentFX

@@ -6,16 +6,16 @@ using UnityEngine.SceneManagement;
 
 public class Scene : MonoBehaviour
 {
-    public static string selectStage;
+    public static int selectStage = -1;
 
     public void OnClickScene(string scene)
     {
         SceneManager.LoadScene(scene);
     }
 
-    public void OnClickCharacter(string charcter)
+    public void OnClickCharacter(int index)
     {
-        selectStage = charcter;
+        selectStage = index;
         SceneManager.LoadScene("PlayScene");
     }
 

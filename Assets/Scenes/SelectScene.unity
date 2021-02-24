@@ -298,6 +298,10 @@ PrefabInstance:
       value: "\u3046"
       objectReference: {fileID: 0}
     - target: {fileID: 1620184553004783124, guid: 4dee812fa4a81fb42949b9d686d11de2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1620184553004783124, guid: 4dee812fa4a81fb42949b9d686d11de2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1916510910}
@@ -306,8 +310,12 @@ PrefabInstance:
       value: OnClickCharacter
       objectReference: {fileID: 0}
     - target: {fileID: 1620184553004783124, guid: 4dee812fa4a81fb42949b9d686d11de2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1620184553004783124, guid: 4dee812fa4a81fb42949b9d686d11de2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: u
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1620184553004783146, guid: 4dee812fa4a81fb42949b9d686d11de2, type: 3}
       propertyPath: m_Name
@@ -747,6 +755,10 @@ PrefabInstance:
       value: "\u3044"
       objectReference: {fileID: 0}
     - target: {fileID: 1620184553004783124, guid: 4dee812fa4a81fb42949b9d686d11de2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1620184553004783124, guid: 4dee812fa4a81fb42949b9d686d11de2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1916510910}
@@ -755,8 +767,12 @@ PrefabInstance:
       value: OnClickCharacter
       objectReference: {fileID: 0}
     - target: {fileID: 1620184553004783124, guid: 4dee812fa4a81fb42949b9d686d11de2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1620184553004783124, guid: 4dee812fa4a81fb42949b9d686d11de2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: i
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1620184553004783146, guid: 4dee812fa4a81fb42949b9d686d11de2, type: 3}
       propertyPath: m_Name
@@ -977,9 +993,17 @@ PrefabInstance:
     m_TransformParent: {fileID: 1902137762}
     m_Modifications:
     - target: {fileID: 1620184553004783124, guid: 4dee812fa4a81fb42949b9d686d11de2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1620184553004783124, guid: 4dee812fa4a81fb42949b9d686d11de2, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1916510910}
+    - target: {fileID: 1620184553004783124, guid: 4dee812fa4a81fb42949b9d686d11de2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1620184553004783146, guid: 4dee812fa4a81fb42949b9d686d11de2, type: 3}
       propertyPath: m_Name
       value: CharacterButton

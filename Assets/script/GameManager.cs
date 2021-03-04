@@ -265,6 +265,12 @@ public class GameManager : MonoBehaviour
         DotweenFade(crayonRenderer, 1.0f, 0.0f);
         DotweenFade(goalRenderer, 0.0f, 0.0f);
     }
+    public void EnterGoal()
+    {
+        enterGoal = true;
+        //DotweenFade(goalRenderer, 0.5f, 0.2f, 3);
+
+    }
 
     public void DotweenFade(SpriteRenderer sprite,float endValue,float duration)
     {

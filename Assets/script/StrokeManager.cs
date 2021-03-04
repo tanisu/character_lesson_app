@@ -52,25 +52,32 @@ public class StrokeManager : MonoBehaviour
                     this.AddPositionDataToLineRendererList();
                 }
             }
-            //ボード外でクリックをやめたら一つ前のストロークを消し、ボードフラグをtrueにする
-            if (Input.GetMouseButtonUp(0) && !GameManager.instance.onBoardFlag && !GameManager.instance.onPanelFlag)
-            {
-                this.DestoryStroke();
-                GameManager.instance.onBoardFlag = true;
-                GameManager.instance.startFlag = false;
-            }
 
-            //ゴールしていないのにクリックをやめたら一つ前のストロークを消す
-            if (Input.GetMouseButtonUp(0) && !GameManager.instance.enterGoal && GameManager.instance.onBoardFlag)
+            //ボタン上げた挙動
+            if (Input.GetMouseButtonUp(0))
             {
-                this.DestoryStroke();
-                GameManager.instance.startFlag = false;
+                //ボード外でクリックをやめたら一つ前のストロークを消し、ボードフラグをtrueにする
+                if (!GameManager.instance.onBoardFlag && !GameManager.instance.onPanelFlag)
+                {
+                    this.DestoryStroke();
+                    GameManager.instance.onBoardFlag = true;
+                    GameManager.instance.startFlag = false;
+                }
+
+                //ゴールしていないのにクリックをやめたら一つ前のストロークを消す
+                if (!GameManager.instance.enterGoal && GameManager.instance.onBoardFlag)
+                {
+                    this.DestoryStroke();
+                    GameManager.instance.startFlag = false;
+                }
+                //ゴールしてマウスを上げたらゴールエンターフラグをfalseにする
+                else if (GameManager.instance.enterGoal)
+                {
+                    GameManager.instance.NextStroke();
+                    GameManager.instance.enterGoal = false;
+                }
             }
-            //ゴールしてマウスを上げたらゴールエンターフラグをfalseにする
-            //else if (Input.GetMouseButtonUp(0) && GameManager.instance.enterGoal)
-            //{
-            //    GameManager.instance.enterGoal = false;
-            //}
+            
         }
 
 

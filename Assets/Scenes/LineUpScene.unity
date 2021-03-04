@@ -274,7 +274,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1031686756}
         m_TargetAssemblyTypeName: Scene, Assembly-CSharp
-        m_MethodName: onClick
+        m_MethodName: OnClickScene
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

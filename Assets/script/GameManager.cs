@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using DG.Tweening;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,10 +11,9 @@ public class GameManager : MonoBehaviour
     //自身を入れるstatci変数
     public static GameManager instance;
     
-    //特典
-    private int score;
-    //ステージ全体のゲームオブジェクトを保存しておくリスト
-    private List<GameObject> allCharacters;
+    //はみ出た回数
+    private int overCount;
+    
     //文字全体の数
     private int characterCount;
     //現在のステージ数
@@ -22,7 +22,12 @@ public class GameManager : MonoBehaviour
     private GameObject currentCharacterObject;
     //現在のステージオブジェクトにアタッチされたクラス
     private BaseCharacterManager currentCharacterManager;
-    
+    //スタートマーカー用レンダラー変数
+    private SpriteRenderer startRenderer;
+    //ゴールマーカー用レンダラー変数
+    private SpriteRenderer goalRenderer;
+    //クレヨン用レンダラー変数
+    private SpriteRenderer crayonRenderer;
 
     //画数
     private int strokeMax;
@@ -32,7 +37,10 @@ public class GameManager : MonoBehaviour
     private List<float> startPosition;
     //ゴール地点の座標
     private List<float> endPosition;
-
+    //スタートマーカー生成用変数
+    private GameObject startViewMarker;
+    //エンドマーカー生成用変数
+    private GameObject goalViewMarker;
 
     //書き順スタートゲームオブジェクト
     [SerializeField]
@@ -46,6 +54,9 @@ public class GameManager : MonoBehaviour
     //全文字を保存してる空の親ゲームオブジェクト
     [SerializeField]
     private GameObject CharactersWrapper;
+    //ステージ全体のゲームオブジェクトを保存しておくリスト
+    [SerializeField]
+    private List<GameObject> allCharacters;
 
 
     //シーンマネージャー
@@ -61,34 +72,25 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject nextButtonWrapper;
 
-    //ゲームスタートフラグ　MojiControllerでも参照するのでpublic
+    //ゲームスタートフラグ　他スクリプトでも参照するのでpublic
     public bool startFlag;
+    public bool onBoardFlag;
+    public bool enterGoal;
+    public bool onPanelFlag;
     public GameObject stroke;
 
 
     private void Awake()
     {
         instance = this;
-        allCharacters = CharactersWrapper.GetComponentsInChildren<Transform>(true).Select(
-            (Transform t) => {
-                
-                if(t.tag == "moji")
-                {
-                    return t.gameObject;
-                }
-                return null;
-            }).ToList();
-        allCharacters.RemoveAll(t => t == null);
         characterCount = allCharacters.Count;
+        Input.multiTouchEnabled = false;
     }
 
     
     void Start()
     {
-        score = 100;
-        
-
-        
+        overCount = 0;        
         if (Scene.selectStage > -1)
         {
             currentStage = Scene.selectStage;
@@ -97,9 +99,8 @@ public class GameManager : MonoBehaviour
         {
             currentStage = 0;
         }
-        currentCharacterObject = allCharacters[currentStage].gameObject;
+        currentCharacterObject = Instantiate(allCharacters[currentStage].gameObject, CharactersWrapper.transform);
         currentCharacterManager = currentCharacterObject.GetComponent<BaseCharacterManager>();
-        //Debug.Log(currentCharacterObject.GetComponent<BaseCharacterManager>().startEnd_x_y.Count);
         
         //最初の画数初期化
         strokeCurrent = 0;
@@ -110,26 +111,45 @@ public class GameManager : MonoBehaviour
         //最初のゴール位置(x,y)
         endPosition = this._getPositions(currentCharacterManager.startEnd_x_y[strokeCurrent].List, "end");
         
-
-
         //次のボタン用処理
         if (currentStage < (characterCount - 1))
         {
             nextButtonWrapper.SetActive(true);
-            string nextCharacter = allCharacters[currentStage + 1].GetComponent<BaseCharacterManager>().displayName;
+            GameObject nextCharacter = Instantiate(allCharacters[currentStage + 1]);
+            string nextCharacterName = nextCharacter.GetComponent<BaseCharacterManager>().displayName;
+            nextCharacter.SetActive(false);
             nextButtonWrapper.GetComponentInChildren<Button>().onClick.AddListener(()=> SceneManager.GetComponent<Scene>().OnClickCharacter(currentStage + 1));
-            
-
-            nextButtonWrapper.transform.GetComponentInChildren<Text>().text = "つぎは「"+nextCharacter+"」だよ";
+            nextButtonWrapper.transform.GetComponentInChildren<Text>().text = "つぎは\n「"+ nextCharacterName + "」";
         }
 
-
-        currentCharacterObject.SetActive(true);
+        //文字のコライダーのトリガーをtrueにする
+        currentCharacterObject.GetComponent<PolygonCollider2D>().isTrigger = true;
+        startFlag = false;
+        onBoardFlag = false;
+        enterGoal = false;
+        onPanelFlag = false;
         this._viewStartAndGoal();
         scoreboard.text = "";
-        startFlag = false;
-        
     }
+
+    private void _viewStartAndGoal()
+    {
+        //スタートとゴールのインスタンス生成
+        startViewMarker = Instantiate(startMarker, currentCharacterObject.transform);
+        goalViewMarker = Instantiate(goalMarker, currentCharacterObject.transform);
+        //スタートとゴールの位置設定
+        startViewMarker.transform.localPosition = new Vector3(startPosition[0], startPosition[1]);
+        goalViewMarker.transform.localPosition = new Vector3(endPosition[0], endPosition[1]);
+        //スタート・ゴール・クレヨンのスプライトを取得
+        startRenderer = startViewMarker.GetComponent<SpriteRenderer>();
+        goalRenderer = goalViewMarker.GetComponent<SpriteRenderer>();
+        crayonRenderer = startViewMarker.transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>();
+        //点滅処理
+        DotweenFade(goalRenderer, 0f, 0f);
+
+
+    }
+
 
     private List<float> _getPositions(List<float> posList ,string posType)
     {
@@ -144,66 +164,29 @@ public class GameManager : MonoBehaviour
         return pos;
     }
 
-    public void startAct()
+    public void StartAct()
     {
         message.text = "スタート";
         startFlag = true;
+        onBoardFlag = true;
+
+        //点滅処理
+        DotweenFade(startRenderer, 0.2f, 0.0f);
+        DotweenFade(crayonRenderer, 0f,0.0f);
+        DotweenFade(goalRenderer, 1.0f, 0.0f);
     }
 
-    public void goalAct()
+    public void NextStroke()
     {
-        
-        message.text = "ゴール！";
-        startMarker.SetActive(false);
-        goalMarker.SetActive(false);
-        startFlag = false;
-        stroke.GetComponent<StrokeManager>().stopStroke();
-
-        currentCharacterObject.SetActive(false);
-        if (score >= 80)
-        {
-            scoreboard.text = "よくできました";
-        }
-        else if (score < 79 && score >= 60)
-        {
-            scoreboard.text = "もうすこし！";
-        }
-        else
-        {
-            scoreboard.text = "がんばろうね！";
-        }
-    }
-
-
-    private void _viewStartAndGoal()
-    {
-
-        startMarker = Instantiate(startMarker,currentCharacterObject.transform);
-        goalMarker = Instantiate(goalMarker,currentCharacterObject.transform);
-
-        startMarker.transform.localPosition = new Vector3(startPosition[0], startPosition[1]);
-        goalMarker.transform.localPosition = new Vector3(endPosition[0], endPosition[1]);
-
-
-        startMarker.SetActive(true);
-        goalMarker.SetActive(true);
-   
-    }
-
-    public void nextStroke()
-    {
-        if(strokeCurrent <(strokeMax-1))
+        if (strokeCurrent < (strokeMax - 1))
         {
             startFlag = false;
+            enterGoal = false;
+            //マーカーを破壊
 
-            /*
-            Destroy(startMarker);
-            Destroy(goalMarker);
-            */
-            
-            startMarker.SetActive(false);
-            goalMarker.SetActive(false);
-            
+            Destroy(startViewMarker);
+            Destroy(goalViewMarker);
+
             strokeCurrent++;
             //最初のスタート位置（x,y）
             startPosition = this._getPositions(currentCharacterManager.startEnd_x_y[strokeCurrent].List, "start");
@@ -213,21 +196,95 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            this.goalAct();
+            this.GoalAct();
         }
-
     }
 
-    public void overCharacter()
+    public void GoalAct()
     {
-        score -= 1;
-        scoreboard.text = "がんばれがんばれ";
-        //Debug.Log(score);
+        
+        message.text = "ゴール！";
+        Destroy(startViewMarker);
+        Destroy(goalViewMarker);
+
+        startFlag = false;
+        
+        stroke.GetComponent<StrokeManager>().StopStroke();
+        DotweenFade(currentCharacterObject,0f,0.0f);
+        string scoreMessage = $"はみでたのは {overCount} かいだよ\n";
+        
+        if(overCount == 0)
+        {
+            scoreMessage += "「すごーい！てんさい！」";
+        }else if(overCount < 4)
+        {
+            scoreMessage += "「あとすこしでかんぺきだね！」";
+        }else if(overCount < 7)
+        {
+            scoreMessage += "ゆっくりやればだいじょうぶ！";
+        }else if(overCount < 21)
+        {
+            scoreMessage += "なんどもれんしゅうしてみよう！";
+        }else
+        {
+            scoreMessage += "ママやパパとやってみよう！";
+        }
+        scoreboard.text = scoreMessage;
     }
 
-    public void enterCharacter()
+
+
+
+
+
+    public void OverCharacter()
+    {
+        overCount++;
+        scoreboard.text = "がんばれがんばれ";
+        
+    }
+
+    public void EnterCharacter()
     {
         scoreboard.text = "そのちょうし！";
+    }
+
+    public void OverhangBoard()
+    {
+        onBoardFlag = false;
+        scoreboard.text = "わくのなかにかいてね";
+        DotweenFade(startRenderer, 1.0f, 0.0f);
+        DotweenFade(crayonRenderer, 1.0f, 0.0f);
+        DotweenFade(goalRenderer, 0.0f, 0.0f);
+    }
+
+    public void QuitStroke()
+    {
+        scoreboard.text = "ゴールめざしてがんばれ！";
+        DotweenFade(startRenderer, 1.0f, 0.0f);
+        DotweenFade(crayonRenderer, 1.0f, 0.0f);
+        DotweenFade(goalRenderer, 0.0f, 0.0f);
+    }
+
+    public void DotweenFade(SpriteRenderer sprite,float endValue,float duration)
+    {
+        sprite.material.DOFade(endValue: endValue, duration: duration);
+    }
+
+    public void DotweenFade(SpriteRenderer sprite, float endValue, float duration,int loop)
+    {
+        sprite.material.DOFade(endValue: endValue, duration: duration).SetLoops(loop, LoopType.Yoyo).OnComplete(()=> {
+            DotweenFade(sprite, 1.0f, 0.5f);
+        });
+    }
+
+    public void DotweenFade(GameObject gObj, float endValue, float duration)
+    {
+        gObj.GetComponent<SpriteRenderer>().material.DOFade(endValue: endValue, duration: duration).OnComplete(() =>
+            {
+                Destroy(gObj);
+            }
+        );
     }
 
 

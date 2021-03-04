@@ -10,6 +10,8 @@ TagManager:
   - PaintArea
   - characterCanvas
   - characters
+  - stroke
+  - Crayon
   layers:
   - Default
   - TransparentFX

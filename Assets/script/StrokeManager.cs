@@ -11,11 +11,6 @@ public class StrokeManager : MonoBehaviour
     private List<LineRenderer> lineRenderers;
 
     /// <summary>
-    /// 描画領域コンポーネント
-    /// </summary>
-    public GameObject paintArea;
-
-    /// <summary>
     /// 線のマテリアル
     /// </summary>
     public Material lineMaterial;
@@ -30,31 +25,60 @@ public class StrokeManager : MonoBehaviour
     /// </summary>
     [Range(0, 10)] public float lineWidth;
 
-
+    private int strokeCount;
   
 
     void Start()
     {
         lineRenderers = new List<LineRenderer>();
-
+        strokeCount = 0;
     }
 
     void Update()
     {
-        if(Input.GetMouseButtonDown(0))
-        {
-            this.AddLineObject();
+        //ゲームスタート時
+        if (GameManager.instance.startFlag) {
+            //スタートマーカークリック時
+            if (Input.GetMouseButtonDown(0))
+            {
+                this.AddLineObject();
+            }
+            //ストローク中
+            if (Input.GetMouseButton(0))
+            {
+                //ボード内であれば描画
+                if (GameManager.instance.onBoardFlag)
+                {
+                    this.AddPositionDataToLineRendererList();
+                }
+            }
+            //ボード外でクリックをやめたら一つ前のストロークを消し、ボードフラグをtrueにする
+            if (Input.GetMouseButtonUp(0) && !GameManager.instance.onBoardFlag && !GameManager.instance.onPanelFlag)
+            {
+                this.DestoryStroke();
+                GameManager.instance.onBoardFlag = true;
+                GameManager.instance.startFlag = false;
+            }
+
+            //ゴールしていないのにクリックをやめたら一つ前のストロークを消す
+            if (Input.GetMouseButtonUp(0) && !GameManager.instance.enterGoal && GameManager.instance.onBoardFlag)
+            {
+                this.DestoryStroke();
+                GameManager.instance.startFlag = false;
+            }
+            //ゴールしてマウスを上げたらゴールエンターフラグをfalseにする
+            //else if (Input.GetMouseButtonUp(0) && GameManager.instance.enterGoal)
+            //{
+            //    GameManager.instance.enterGoal = false;
+            //}
         }
 
-        if (Input.GetMouseButton(0))
-        {
-            this.AddPositionDataToLineRendererList();
-        }
-        //if (Input.GetMouseButtonUp(0))
-        //{
-            
-        //    Debug.Log(lineRenderers.Last().positionCount);
-        //}
+
+
+
+
+
+
     }
 
     /// <summary>
@@ -62,19 +86,28 @@ public class StrokeManager : MonoBehaviour
     /// </summary>
     private void AddLineObject()
     {
+        
         //空のゲームオブジェクト作成
         GameObject lineObject = new GameObject("stroke");
+        lineObject.tag = "stroke";
         //空のゲームオブジェクトにLineRendererコンポーネント追加
         lineObject.AddComponent<LineRenderer>();
+            
         lineObject.AddComponent<CircleCollider2D>();
+        lineObject.GetComponent<CircleCollider2D>().radius = 0.2f;
+        lineObject.GetComponent<CircleCollider2D>().isTrigger = true;
         lineObject.AddComponent<Rigidbody2D>();
         lineObject.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
         lineObject.GetComponent<Rigidbody2D>().simulated = true;
-
+        lineObject.GetComponent<Rigidbody2D>().gravityScale = 0;
         //LineRendererリストに上記ゲームオブジェクト追加
         lineRenderers.Add(lineObject.GetComponent<LineRenderer>());
         lineObject.transform.parent = transform;
+            
         this.initLastRenderers();
+        strokeCount++;
+        //Debug.Log(strokeCount);
+        
     }
 
     public void Restart()
@@ -82,11 +115,17 @@ public class StrokeManager : MonoBehaviour
         this.AddLineObject();
     }
 
-    public void stopStroke()
+    public void StopStroke()
     {
         Destroy(this);
     }
  
+    public void DestoryStroke()
+    {
+        Destroy(lineRenderers[lineRenderers.Count - 1].gameObject);
+    }
+
+
 
     /// <summary>
     /// 線コンポーネント初期化
@@ -112,26 +151,40 @@ public class StrokeManager : MonoBehaviour
     /// </summary>
     private void AddPositionDataToLineRendererList()
     {
-        //マウス座標を取得し、ワールド座標に変換
-        Vector3 screenPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.nearClipPlane + 1.0f);
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(screenPosition);
+        try
+        {
+            //マウス座標を取得し、ワールド座標に変換
+            Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.nearClipPlane + 1.0f);
+            Vector3 worldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
 
-        
 
-        //線と線をつなぐ点の数を更新
-        lineRenderers.Last().positionCount += 1;
 
-        /*
-        Debug.Log($"LineRenderer:mousePosition > {mousePosition}");
-        Debug.Log($"LineRenderer:screenPosition > {screenPosition}");
-        */
-        //paintArea.GetComponent<Painter>().LineTo(mousePosition, mousePosition, Color.green);
+            //線と線をつなぐ点の数を更新
+            lineRenderers.Last().positionCount += 1;
 
-        //線のコンポーネントリストを更新
-        lineRenderers.Last().SetPosition(lineRenderers.Last().positionCount - 1, mousePosition);
-        
+
+
+            //線のコンポーネントリストを更新
+            lineRenderers.Last().SetPosition(lineRenderers.Last().positionCount - 1, worldPosition);
+
+
+            Vector3 localPos = transform.InverseTransformPoint(worldPosition.x, worldPosition.y, -1.0f);
+            //Debug.Log($"before:{localPos}");
+            lineRenderers.Last().transform.localPosition = localPos;
+
+            //Debug.Log($"local:{lineRenderers.Last().transform.localPosition}");
+        }catch(MissingReferenceException e)
+        {
+            Debug.LogError(e.Message);
+        }
+
+
+
     }
 
     
+
+
+
 
 }

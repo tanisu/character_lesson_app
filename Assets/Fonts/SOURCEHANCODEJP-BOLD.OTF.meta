@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: 69e21ecb48f566b449623067a0a4f17a
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 20
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Source Han Code JP
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: e686be7c7008d19469fb63cff0630332, type: 3}
+  - {fileID: 12800000, guid: 52fc89a2d205af04b9471073ce4593dd, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

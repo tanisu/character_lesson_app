@@ -37,6 +37,12 @@ public class GameManager : MonoBehaviour
     private List<float> startPosition;
     //ゴール地点の座標
     private List<float> endPosition;
+
+    ////
+    //private List<List<float>> markerPositions;
+    ////
+    //private List<GameObject> startViewMarkers;
+
     //スタートマーカー生成用変数
     private GameObject startViewMarker;
     //エンドマーカー生成用変数
@@ -70,7 +76,7 @@ public class GameManager : MonoBehaviour
     private Text scoreboard;
     //次の文字ボタン用の親ゲームオブジェクト
     [SerializeField]
-    private GameObject nextButtonWrapper;
+    private Button nextButton;
 
     //ゲームスタートフラグ　他スクリプトでも参照するのでpublic
     public bool startFlag;
@@ -99,6 +105,8 @@ public class GameManager : MonoBehaviour
         {
             currentStage = 0;
         }
+
+
         currentCharacterObject = Instantiate(allCharacters[currentStage].gameObject, CharactersWrapper.transform);
         currentCharacterManager = currentCharacterObject.GetComponent<BaseCharacterManager>();
         
@@ -110,17 +118,35 @@ public class GameManager : MonoBehaviour
         startPosition = this._getPositions(currentCharacterManager.startEnd_x_y[strokeCurrent].List,"start");
         //最初のゴール位置(x,y)
         endPosition = this._getPositions(currentCharacterManager.startEnd_x_y[strokeCurrent].List, "end");
-        
+
+
+        //markerPositions = new List<List<float>>();
+        //startViewMarkers = new List<GameObject>();
+        ////Debug.Log(currentCharacterManager.startEnd_x_y.Count);
+        ////foreach(ValueList l in currentCharacterManager.startEnd_x_y)
+        ////{
+        ////    markerPositions.Add(l.List);
+        ////    Debug.Log(markerPositions[0][1]);
+        ////}
+        //for(int i = 0;i < currentCharacterManager.startEnd_x_y.Count; i++)
+        //{
+        //    for(int j = 0;j < currentCharacterManager.startEnd_x_y[i].List.Count; j++)
+        //    {
+
+        //        //Debug.Log(currentCharacterManager.startEnd_x_y[i].List.Count);
+        //       markerPositions.Add(currentCharacterManager.startEnd_x_y[i].List);
+        //       //Debug.Log(markerPositions[j][0]);
+        //    }
+
+        //    //startViewMarkers[i] = Instantiate(startMarker, new Vector3(markerPositions[i][0], markerPositions[i][1]));
+        //}
+
         //次のボタン用処理
-        if (currentStage < (characterCount - 1))
-        {
-            nextButtonWrapper.SetActive(true);
-            GameObject nextCharacter = Instantiate(allCharacters[currentStage + 1]);
-            string nextCharacterName = nextCharacter.GetComponent<BaseCharacterManager>().displayName;
-            nextCharacter.SetActive(false);
-            nextButtonWrapper.GetComponentInChildren<Button>().onClick.AddListener(()=> SceneManager.GetComponent<Scene>().OnClickCharacter(currentStage + 1));
-            nextButtonWrapper.transform.GetComponentInChildren<Text>().text = "つぎは\n「"+ nextCharacterName + "」";
-        }
+        //nextButtonWrapper.SetActive(true);
+
+
+        this._viewNextButton();
+        
 
         //文字のコライダーのトリガーをtrueにする
         currentCharacterObject.GetComponent<PolygonCollider2D>().isTrigger = true;
@@ -131,6 +157,8 @@ public class GameManager : MonoBehaviour
         this._viewStartAndGoal();
         scoreboard.text = "";
     }
+
+   
 
     private void _viewStartAndGoal()
     {
@@ -145,9 +173,32 @@ public class GameManager : MonoBehaviour
         goalRenderer = goalViewMarker.GetComponent<SpriteRenderer>();
         crayonRenderer = startViewMarker.transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>();
         //点滅処理
-        DotweenFade(goalRenderer, 0f, 0f);
+        DotweenFade(goalRenderer, 0.2f, 0f); 
+    }
 
-
+    private void _viewNextButton()
+    {
+        if(currentStage + 1 <characterCount)
+        {
+            
+        
+        GameObject nextCharacter = Instantiate(allCharacters[currentStage + 1]);
+        string nextCharacterName = nextCharacter.GetComponent<BaseCharacterManager>().displayName;
+        Destroy(nextCharacter);
+        //nextCharacter.SetActive(false);
+        nextButton.transform.GetComponentInChildren<Text>().text = "つぎは\n「" + nextCharacterName + "」";
+        nextButton.onClick.AddListener(() => SceneManager.GetComponent<Scene>().OnClickCharacter(currentStage + 1));
+            //nextButton.onClick.AddListener(() =>
+            //{
+            //    Debug.Log("next");
+            //    Destroy(currentCharacterObject);
+            //    Destroy(nextCharacter);
+            //    this._restart(0);
+            //    //Destroy(currentCharacterObject);
+            //    //Scene.selectStage = currentStage + 1;
+            //    //this.Start();
+            //});
+        }
     }
 
 
@@ -166,6 +217,7 @@ public class GameManager : MonoBehaviour
 
     public void StartAct()
     {
+        Debug.Log("start");
         message.text = "スタート";
         startFlag = true;
         onBoardFlag = true;
@@ -174,6 +226,7 @@ public class GameManager : MonoBehaviour
         DotweenFade(startRenderer, 0.2f, 0.0f);
         DotweenFade(crayonRenderer, 0f,0.0f);
         DotweenFade(goalRenderer, 1.0f, 0.0f);
+        
     }
 
     public void NextStroke()
@@ -255,7 +308,7 @@ public class GameManager : MonoBehaviour
         scoreboard.text = "わくのなかにかいてね";
         DotweenFade(startRenderer, 1.0f, 0.0f);
         DotweenFade(crayonRenderer, 1.0f, 0.0f);
-        DotweenFade(goalRenderer, 0.0f, 0.0f);
+        //DotweenFade(goalRenderer, 0.0f, 0.0f);
     }
 
     public void QuitStroke()
@@ -263,7 +316,7 @@ public class GameManager : MonoBehaviour
         scoreboard.text = "ゴールめざしてがんばれ！";
         DotweenFade(startRenderer, 1.0f, 0.0f);
         DotweenFade(crayonRenderer, 1.0f, 0.0f);
-        DotweenFade(goalRenderer, 0.0f, 0.0f);
+        //DotweenFade(goalRenderer, 0.0f, 0.0f);
     }
     public void EnterGoal()
     {
@@ -293,8 +346,38 @@ public class GameManager : MonoBehaviour
         );
     }
 
+    //不要メソッドになるかも
+    void _restart(int stage = 0)
+    {
+        overCount = 0;
+        currentStage = 0;
+        currentCharacterObject = Instantiate(allCharacters[currentStage].gameObject, CharactersWrapper.transform);
+        currentCharacterManager = currentCharacterObject.GetComponent<BaseCharacterManager>();
+        //最初の画数初期化
+        strokeCurrent = 0;
+        //最大画数画数
+        strokeMax = currentCharacterManager.startEnd_x_y.Count;
+        //最初のスタート位置（x,y）
+        startPosition = this._getPositions(currentCharacterManager.startEnd_x_y[strokeCurrent].List, "start");
+        //最初のゴール位置(x,y)
+        endPosition = this._getPositions(currentCharacterManager.startEnd_x_y[strokeCurrent].List, "end");
+
+        //次のボタン用処理
+        //nextButtonWrapper.SetActive(true);
 
 
+        this._viewNextButton();
+
+
+        //文字のコライダーのトリガーをtrueにする
+        currentCharacterObject.GetComponent<PolygonCollider2D>().isTrigger = true;
+        startFlag = false;
+        onBoardFlag = false;
+        enterGoal = false;
+        onPanelFlag = false;
+        this._viewStartAndGoal();
+        scoreboard.text = "";
+    }
 
 
 

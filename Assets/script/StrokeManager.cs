@@ -36,6 +36,7 @@ public class StrokeManager : MonoBehaviour
 
     void Update()
     {
+
         //ゲームスタート時
         if (GameManager.instance.startFlag) {
             //スタートマーカークリック時

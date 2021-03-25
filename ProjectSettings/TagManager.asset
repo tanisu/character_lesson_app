@@ -12,6 +12,10 @@ TagManager:
   - characters
   - stroke
   - Crayon
+  - Dakuten
+  - Handakuten
+  - Komoji
+  - Spacer
   layers:
   - Default
   - TransparentFX
@@ -46,9 +50,9 @@ TagManager:
   - 
   - moji
   m_SortingLayers:
+  - name: Cover
+    uniqueID: 880623245
+    locked: 0
   - name: Default
     uniqueID: 0
-    locked: 0
-  - name: back
-    uniqueID: 996342245
     locked: 0

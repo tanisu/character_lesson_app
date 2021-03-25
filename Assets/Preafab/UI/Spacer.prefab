@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 843890080277279934}
   m_Layer: 5
   m_Name: Spacer
-  m_TagString: Untagged
+  m_TagString: Spacer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -33,5 +33,5 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 60, y: 60}
+  m_SizeDelta: {x: 80, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}

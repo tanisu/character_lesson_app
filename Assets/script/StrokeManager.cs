@@ -42,6 +42,7 @@ public class StrokeManager : MonoBehaviour
             //スタートマーカークリック時
             if (Input.GetMouseButtonDown(0))
             {
+                
                 this.AddLineObject();
             }
             //ストローク中
@@ -75,7 +76,6 @@ public class StrokeManager : MonoBehaviour
                 else if (GameManager.instance.enterGoal)
                 {
                     GameManager.instance.NextStroke();
-                    GameManager.instance.enterGoal = false;
                 }
             }
             

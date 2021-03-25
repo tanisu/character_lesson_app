@@ -9,7 +9,6 @@ public class StartController : MonoBehaviour
         if (!GameManager.instance.startFlag)
         {
             GameManager.instance.StartAct();
-            
         }
     }
 }

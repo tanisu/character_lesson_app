@@ -88,6 +88,7 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        
         instance = this;
         characterCount = allCharacters.Count;
         Input.multiTouchEnabled = false;
@@ -118,31 +119,6 @@ public class GameManager : MonoBehaviour
         startPosition = this._getPositions(currentCharacterManager.startEnd_x_y[strokeCurrent].List,"start");
         //最初のゴール位置(x,y)
         endPosition = this._getPositions(currentCharacterManager.startEnd_x_y[strokeCurrent].List, "end");
-
-
-        //markerPositions = new List<List<float>>();
-        //startViewMarkers = new List<GameObject>();
-        ////Debug.Log(currentCharacterManager.startEnd_x_y.Count);
-        ////foreach(ValueList l in currentCharacterManager.startEnd_x_y)
-        ////{
-        ////    markerPositions.Add(l.List);
-        ////    Debug.Log(markerPositions[0][1]);
-        ////}
-        //for(int i = 0;i < currentCharacterManager.startEnd_x_y.Count; i++)
-        //{
-        //    for(int j = 0;j < currentCharacterManager.startEnd_x_y[i].List.Count; j++)
-        //    {
-
-        //        //Debug.Log(currentCharacterManager.startEnd_x_y[i].List.Count);
-        //       markerPositions.Add(currentCharacterManager.startEnd_x_y[i].List);
-        //       //Debug.Log(markerPositions[j][0]);
-        //    }
-
-        //    //startViewMarkers[i] = Instantiate(startMarker, new Vector3(markerPositions[i][0], markerPositions[i][1]));
-        //}
-
-        //次のボタン用処理
-        //nextButtonWrapper.SetActive(true);
 
 
         this._viewNextButton();
@@ -217,11 +193,10 @@ public class GameManager : MonoBehaviour
 
     public void StartAct()
     {
-        Debug.Log("start");
         message.text = "スタート";
         startFlag = true;
         onBoardFlag = true;
-
+        AudioManager.I.StartStroke();
         //点滅処理
         DotweenFade(startRenderer, 0.2f, 0.0f);
         DotweenFade(crayonRenderer, 0f,0.0f);
@@ -233,6 +208,7 @@ public class GameManager : MonoBehaviour
     {
         if (strokeCurrent < (strokeMax - 1))
         {
+            AudioManager.I.EnterGoal();
             startFlag = false;
             enterGoal = false;
             //マーカーを破壊
@@ -249,6 +225,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            AudioManager.I.ClearStage();
             this.GoalAct();
         }
     }
@@ -304,6 +281,7 @@ public class GameManager : MonoBehaviour
 
     public void OverhangBoard()
     {
+        enterGoal = false;
         onBoardFlag = false;
         scoreboard.text = "わくのなかにかいてね";
         DotweenFade(startRenderer, 1.0f, 0.0f);
@@ -321,7 +299,7 @@ public class GameManager : MonoBehaviour
     public void EnterGoal()
     {
         enterGoal = true;
-        //DotweenFade(goalRenderer, 0.5f, 0.2f, 3);
+        
 
     }
 

@@ -8,29 +8,28 @@ public class Scene : MonoBehaviour
 {
     public static int selectStage = -1;
     public static int stageCount = -1;
-    public AudioClip buttonSE;
-    private AudioSource audioSource;
 
-    void Awake()
+    private void Awake()
     {
-        audioSource = this.gameObject.GetComponent<AudioSource>();
-        
+        AudioManager.GetI();
     }
+
+
     public void OnClickScene(string scene)
     {
         
         SceneManager.LoadScene(scene);
+        AudioManager.I.ClickSoft();
     }
     public void OnClickCharacter(int index)
     {
         selectStage = index;
+        
         SceneManager.LoadScene("PlayScene");
+        AudioManager.I.ClickSoft();
     }
 
-    public void PlayClickSound()
-    {
-        audioSource.PlayOneShot(buttonSE);
-    }
+    
 
 
 }

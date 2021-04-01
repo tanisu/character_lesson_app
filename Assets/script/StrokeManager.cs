@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Linq;
 
 public class StrokeManager : MonoBehaviour
@@ -25,13 +26,14 @@ public class StrokeManager : MonoBehaviour
     /// </summary>
     [Range(0, 10)] public float lineWidth;
 
-    private int strokeCount;
+    [SerializeField]
+    Image canvasImage;
   
 
     void Start()
     {
         lineRenderers = new List<LineRenderer>();
-        strokeCount = 0;
+        //strokeCount = 0;
     }
 
     void Update()
@@ -113,7 +115,7 @@ public class StrokeManager : MonoBehaviour
         lineObject.transform.parent = transform;
             
         this.initLastRenderers();
-        strokeCount++;
+        //strokeCount++;
         //Debug.Log(strokeCount);
         
     }
@@ -164,23 +166,14 @@ public class StrokeManager : MonoBehaviour
             //マウス座標を取得し、ワールド座標に変換
             Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.nearClipPlane + 1.0f);
             Vector3 worldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
-
-
-
+           
             //線と線をつなぐ点の数を更新
             lineRenderers.Last().positionCount += 1;
-
-
-
             //線のコンポーネントリストを更新
             lineRenderers.Last().SetPosition(lineRenderers.Last().positionCount - 1, worldPosition);
-
-
-            Vector3 localPos = transform.InverseTransformPoint(worldPosition.x, worldPosition.y, -1.0f);
-            //Debug.Log($"before:{localPos}");
+            Vector3 localPos = transform.InverseTransformPoint(worldPosition.x, worldPosition.y, -1.0f);        
             lineRenderers.Last().transform.localPosition = localPos;
 
-            //Debug.Log($"local:{lineRenderers.Last().transform.localPosition}");
         }catch(MissingReferenceException e)
         {
             Debug.LogError(e.Message);

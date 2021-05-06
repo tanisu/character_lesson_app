@@ -12,6 +12,13 @@ public class StrokeManager : MonoBehaviour
     private List<LineRenderer> lineRenderers;
 
     /// <summary>
+    /// マウスポジションのリスト
+    /// </summary>
+    
+
+    
+
+    /// <summary>
     /// 線のマテリアル
     /// </summary>
     public Material lineMaterial;
@@ -28,17 +35,21 @@ public class StrokeManager : MonoBehaviour
 
     [SerializeField]
     Image canvasImage;
-  
+
+    //Texture2D texture;
+    //SpriteRenderer MainSpriteRenderer;
 
     void Start()
     {
+
+        
         lineRenderers = new List<LineRenderer>();
-        //strokeCount = 0;
+
     }
 
     void Update()
     {
-
+        
         //ゲームスタート時
         if (GameManager.instance.startFlag) {
             //スタートマーカークリック時
@@ -72,12 +83,14 @@ public class StrokeManager : MonoBehaviour
                 if (!GameManager.instance.enterGoal && GameManager.instance.onBoardFlag)
                 {
                     this.DestoryStroke();
+                    GameManager.instance.QuitStroke();
                     GameManager.instance.startFlag = false;
                 }
                 //ゴールしてマウスを上げたらゴールエンターフラグをfalseにする
                 else if (GameManager.instance.enterGoal)
                 {
                     GameManager.instance.NextStroke();
+
                 }
             }
             
@@ -112,6 +125,8 @@ public class StrokeManager : MonoBehaviour
         lineObject.GetComponent<Rigidbody2D>().gravityScale = 0;
         //LineRendererリストに上記ゲームオブジェクト追加
         lineRenderers.Add(lineObject.GetComponent<LineRenderer>());
+        //mousePositions.Add(new List<Vector3>());
+        
         lineObject.transform.parent = transform;
             
         this.initLastRenderers();
@@ -132,7 +147,8 @@ public class StrokeManager : MonoBehaviour
  
     public void DestoryStroke()
     {
-        Destroy(lineRenderers[lineRenderers.Count - 1].gameObject);
+        Destroy(lineRenderers[lineRenderers.Count - 1]);
+        //mousePositions.RemoveAt(mousePositions.Count -1);
     }
 
 
@@ -153,6 +169,7 @@ public class StrokeManager : MonoBehaviour
         //線の太さ初期化
         lineRenderers.Last().startWidth = this.lineWidth;
         lineRenderers.Last().endWidth = this.lineWidth;
+        
     }
 
 
@@ -161,19 +178,22 @@ public class StrokeManager : MonoBehaviour
     /// </summary>
     private void AddPositionDataToLineRendererList()
     {
+
         try
         {
+
             //マウス座標を取得し、ワールド座標に変換
             Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.nearClipPlane + 1.0f);
             Vector3 worldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
-           
+            Vector3 localPos = transform.InverseTransformPoint(worldPosition.x, worldPosition.y, -1.0f);
+            lineRenderers.Last().transform.localPosition = localPos;
             //線と線をつなぐ点の数を更新
             lineRenderers.Last().positionCount += 1;
             //線のコンポーネントリストを更新
             lineRenderers.Last().SetPosition(lineRenderers.Last().positionCount - 1, worldPosition);
-            Vector3 localPos = transform.InverseTransformPoint(worldPosition.x, worldPosition.y, -1.0f);        
-            lineRenderers.Last().transform.localPosition = localPos;
+            
 
+            
         }catch(MissingReferenceException e)
         {
             Debug.LogError(e.Message);

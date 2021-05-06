@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 /// <summary>
 /// ‚¨ŠG•`‚«
@@ -12,121 +13,166 @@ public class Painter : MonoBehaviour
     Texture2D texture;
     Vector3 beforeMousePos;
 
-    Color bgColor = Color.white;
-    Color lineColor = Color.red;
+    //Color bgColor = Color.black;
+    Color bgColor = new Color(0f,0f,0f,0f);
+
+    Color[] buffer;
+    Vector2 _prevPos;
 
     void Start()
     {
-        var img = GetComponent<Image>();
-        var rt = GetComponent<RectTransform>();
-        var width = (int)rt.rect.width;
-        var height = (int)rt.rect.height;
+        Image img = GetComponent<Image>();
+        RectTransform rt = GetComponent<RectTransform>();
+        int width = (int)rt.rect.width;
+        int height = (int)rt.rect.height;
         texture = new Texture2D(width, height, TextureFormat.ARGB32, false);
+        Color[] pixels = texture.GetPixels();
+        buffer = new Color[pixels.Length];
+        pixels.CopyTo(buffer, 0);
         img.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
-        Color32[] texColors = Enumerable.Repeat<Color32>(bgColor, width * height).ToArray();
-        texture.SetPixels32(texColors);
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                buffer.SetValue(bgColor, x + width * y);
+            }
+        }
+        texture.filterMode = FilterMode.Point;
         texture.Apply();
     }
 
-    void Update()
+    public void paintCanvas(List<List<Vector3>> positions)
     {
-        if (Input.GetMouseButtonDown(0))
+        foreach(List<Vector3> pos in positions)
         {
-            beforeMousePos = GetPosition();
-        }
-        else if (Input.GetMouseButton(0))
-        {
-            Vector3 v = GetPosition();
-            LineTo(beforeMousePos, v, lineColor);
-            beforeMousePos = v;
-            texture.Apply();
-        }
-    }
 
-
-    public Vector3 GetPosition()
-    {
-        Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.nearClipPlane + 1.0f);
-        Vector3 worldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
-        Vector3 localPos = transform.InverseTransformPoint(worldPosition.x, worldPosition.y, -1.0f);
-        var rect1 = GetComponent<RectTransform>();
-        int xpos = (int)(localPos.x);
-        int ypos = (int)(localPos.y);
-
-        if (xpos < 0) xpos = xpos + (int)rect1.rect.width / 2;
-        else xpos += (int)rect1.rect.width / 2;
-
-        if (ypos > 0) ypos = ypos + (int)rect1.rect.height / 2;
-        else ypos += (int)rect1.rect.height / 2;
-
-        return new Vector3(xpos, ypos, 0);
-
-    }
-
-
-    public void LineTo(Vector3 start, Vector3 end, Color color)
-    {
-
- 
-        float x = start.x, y = start.y;
-
-        int paintW = 3, paintH = 3;
-        int paintColorNum = paintW * paintH;
-        Color[] wcolor = new Color[paintColorNum];
-        for(int i = 0;i < wcolor.Length; i++)
-        {
-            wcolor[i] = Color.red;
-        }
-
-
-        if (Mathf.Abs(start.x - end.x) > Mathf.Abs(start.y - end.y))
-        {
-            float dy = Math.Abs(end.x - start.x) < float.Epsilon ? 0 : (end.y - start.y) / (end.x - start.x);
-            float dx = start.x < end.x ? 1 : -1;
-            while (x > 0 && x < texture.width && y > 0 && y < texture.height)
+            foreach(var (p,index) in pos.Select((item,index) => (item,index)))
             {
-                try
+                if (_prevPos == Vector2.zero)
                 {
-                    texture.SetPixels((int)x, (int)y, paintW, paintH, wcolor);
-                    x += dx;
-                    y += dx * dy;
-                    if (start.x < end.x && x > end.x ||
-                        start.x > end.x && x < end.x)
+                    Debug.Log("Method zero");
+                    _prevPos = p;
+                }
+                //else
+                //{
+                //    _prevPos = pos[index - 1];
+                //}
+                Vector2 endPos = p;
+                //Debug.Log($"Method _prevPos:{_prevPos} endPos:{endPos}");
+                float lineLength = Vector2.Distance(_prevPos, endPos);
+                Debug.Log($"Method lineLength:{lineLength}");
+                int lerpCountAdjustNum = 5;
+                int lerpCount = Mathf.CeilToInt(lineLength / lerpCountAdjustNum);
+                for(int i = 1;i <= lerpCount; i++)
+                {
+                    float lerpWeight = (float)i / lerpCount;
+                    Vector3 lerpPos = Vector3.Lerp(_prevPos, Input.mousePosition, lerpWeight);
+                    Vector3 worldPos = Camera.main.ScreenToWorldPoint(lerpPos);
+                    Vector3 localPos = transform.InverseTransformPoint(worldPos.x, worldPos.y, -1.0f);
+                    RectTransform r = GetComponent<RectTransform>();
+                    int xpos = (int)localPos.x;
+                    int ypos = (int)localPos.y;
+                    if (xpos < 0)
                     {
-                        break;
+                        xpos = xpos + (int)r.rect.width / 2;
                     }
+                    else
+                    {
+                        xpos += (int)r.rect.width / 2;
+                    }
+                    if (ypos > 0)
+                    {
+                        ypos = ypos + (int)r.rect.height / 2;
+                    }
+                    else
+                    {
+                        ypos += (int)r.rect.height / 2;
+                    }
+
+                    DrawBuffer(new Vector2(xpos, ypos));
+                    texture.SetPixels(buffer);
+                    texture.Apply();
                 }
-                catch (Exception e)
-                {
-                    Debug.LogException(e);
-                    break;
-                }
+                _prevPos = p;
             }
+            _prevPos = Vector2.zero;
         }
-        else if (Mathf.Abs(start.x - end.x) < Mathf.Abs(start.y - end.y))
+       
+
+    }
+
+  /*  void Update()
+    { 
+        if (Input.GetMouseButton(0))
         {
+           
+            if (_prevPos == Vector2.zero)
+            {
+                Debug.Log("Update zero");
+                _prevPos = Input.mousePosition;
+            }
+            Vector2 endPos = Input.mousePosition;
+            //Debug.Log($"Update _prevPos:{_prevPos} endPos:{endPos}");
+            float lineLength = Vector2.Distance(_prevPos, endPos);
+            Debug.Log($"Update lineLength:{lineLength}");
+            int lerpCountAdjustNum = 5;
+            int lerpCount = Mathf.CeilToInt(lineLength / lerpCountAdjustNum);
+            for (int i = 1; i <= lerpCount; i++)
+            {
+                float lerpWeight = (float)i / lerpCount;
+                Vector3 lerpPos = Vector3.Lerp(_prevPos, Input.mousePosition, lerpWeight);
+                Vector3 pos = Camera.main.ScreenToWorldPoint(lerpPos);
+                Vector3 localPos = transform.InverseTransformPoint(pos.x, pos.y, -1.0f);
+                RectTransform r = GetComponent<RectTransform>();
+                int xpos = (int)localPos.x;
+                int ypos = (int)localPos.y;
+                if (xpos < 0)
+                {
+                    xpos = xpos + (int)r.rect.width / 2;
+                }
+                else
+                {
+                    xpos += (int)r.rect.width / 2;
+                }
+                if (ypos > 0)
+                {
+                    ypos = ypos + (int)r.rect.height / 2;
+                }
+                else
+                {
+                    ypos += (int)r.rect.height / 2;
+                }
+
+                DrawBuffer(new Vector2(xpos, ypos));
+                texture.SetPixels(buffer);
+                texture.Apply();
+            }
+            _prevPos = Input.mousePosition;
+        }
+        else
+        {
+            _prevPos = Vector2.zero;
+        }
             
-            float dx = Math.Abs(start.y - end.y) < float.Epsilon ? 0 : (end.x - start.x) / (end.y - start.y);
-            float dy = start.y < end.y ? 1 : -1;
-            while (x > 0 && x < texture.width && y > 0 && y < texture.height)
+
+    }
+  */
+
+    public void DrawBuffer(Vector2 p)
+    {
+        for(int x = 0;x < texture.width; x++)
+        {
+            for(int y = 0;y < texture.height; y++)
             {
-                try
+                if((p - new Vector2(x,y)).magnitude < 1.5)
                 {
-                    texture.SetPixels((int)x, (int)y, paintW, paintH, wcolor);
-                    x += dx * dy;
-                    y += dy;
-                    if (start.y < end.y && y > end.y ||
-                        start.y > end.y && y < end.y)
-                    {
-                        break;
-                    }
-                }
-                catch (Exception e)
-                {
-                    Debug.LogException(e);
-                    break;
+                    buffer.SetValue(Color.red, x + texture.width * y);
                 }
             }
         }
     }
+
+
+
 }

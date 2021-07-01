@@ -29,6 +29,12 @@ public class Scene : MonoBehaviour
         AudioManager.I.ClickSoft();
     }
 
+    public void OnClickRetry()
+    {
+        selectStage = GameManager.instance.GetCurrentStage();
+        SceneManager.LoadScene("PlayScene");
+        AudioManager.I.ClickSoft();
+    }
     
 
 

@@ -10,7 +10,8 @@ public class AudioManager : MonoBehaviour
     AudioClip clickSoft;
     AudioClip clearStage;
     AudioClip startStroke;
-    
+    AudioClip create;
+    AudioClip delete;
     private AudioSource audioSource;
 
     public static AudioManager I { get; private set; }
@@ -47,6 +48,9 @@ public class AudioManager : MonoBehaviour
         clickSoft = Resources.Load<AudioClip>("Sound/clickSoft");
         clearStage = Resources.Load<AudioClip>("Sound/clear");
         startStroke = Resources.Load<AudioClip>("Sound/start");
+        create = Resources.Load<AudioClip>("Sound/create");
+        delete = Resources.Load<AudioClip>("Sound/delete");
+
 
     }
 
@@ -88,5 +92,15 @@ public class AudioManager : MonoBehaviour
     public void ClearStage()
     {
         audioSource.PlayOneShot(clearStage);
+    }
+
+    public void CreateImage()
+    {
+        audioSource.PlayOneShot(create);
+    }
+
+    public void DeleteImage()
+    {
+        audioSource.PlayOneShot(delete);
     }
 }

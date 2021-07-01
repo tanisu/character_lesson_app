@@ -15,7 +15,8 @@ public class GameManager : MonoBehaviour
     private int overCount;
     
     //文字全体の数
-    private int characterCount;
+    //private int characterCount;
+
     //現在のステージ数
     private int currentStage;
     //現在のステージオブジェクト（文字）
@@ -45,6 +46,9 @@ public class GameManager : MonoBehaviour
     //エンドマーカー生成用変数
     private GameObject goalViewMarker;
 
+    [SerializeField]
+    TextAsset stageFile;
+
     //書き順スタートゲームオブジェクト
     [SerializeField]
     private GameObject startMarker;
@@ -52,18 +56,13 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject goalMarker;
 
-    //完成した文字を保存するためのもの（今後使う予定）
-    private List<GameObject> completeCharacters;
+    
     //全文字を保存してる空の親ゲームオブジェクト
     [SerializeField]
     private GameObject CharactersWrapper;
-    //ステージ全体のゲームオブジェクトを保存しておくリスト
-    [SerializeField]
-    private List<GameObject> allCharacters;
     //クリア後に出てくるパネル
     [SerializeField]
     private GameObject clearPanel;
-
 
     //シーンマネージャー
     [SerializeField]
@@ -85,10 +84,14 @@ public class GameManager : MonoBehaviour
     private GameObject TestSprite;
     [SerializeField]
     private GameObject CompImage;
+    [SerializeField]
+    private List<Transform> ColorButtons;
+    
 
 
     private int canvasH = 600;
     private Color bgColor;
+    private List<string> characters;
 
     //ゲームスタートフラグ　他スクリプトでも参照するのでpublic
     public bool startFlag;
@@ -105,14 +108,17 @@ public class GameManager : MonoBehaviour
     {
         
         instance = this;
-        characterCount = allCharacters.Count;
+        characters = new List<string>();
+        LoadCharacterData();
         Input.multiTouchEnabled = false;
     }
 
     
     void Start()
     {
-        overCount = 0;        
+
+        
+        overCount = 0;
         if (Scene.selectStage > -1)
         {
             currentStage = Scene.selectStage;
@@ -121,9 +127,9 @@ public class GameManager : MonoBehaviour
         {
             currentStage = 0;
         }
-        //clearPanel.transform.SetAsFirstSibling();
-
-        currentCharacterObject = Instantiate(allCharacters[currentStage].gameObject, CharactersWrapper.transform);
+        
+        GameObject tempObj = (GameObject)Resources.Load("Characters/"+currentStage);
+        currentCharacterObject = Instantiate(tempObj, CharactersWrapper.transform);
         currentCharacterManager = currentCharacterObject.GetComponent<BaseCharacterManager>();
         currentName = currentCharacterManager.name.Replace("(Clone)","");
          
@@ -138,7 +144,7 @@ public class GameManager : MonoBehaviour
 
 
         this._viewNextButton();
-        
+
 
         //文字のコライダーのトリガーをtrueにする
         currentCharacterObject.GetComponent<PolygonCollider2D>().isTrigger = true;
@@ -171,19 +177,19 @@ public class GameManager : MonoBehaviour
 
     private void _viewNextButton()
     {
-        if(currentStage + 1 <characterCount)
+        string nextCharacterName = "";
+        if (currentStage + 1 < characters.Count)
         {
-            
-        GameObject nextCharacter = Instantiate(allCharacters[currentStage + 1]);
-            
-        string nextCharacterName = nextCharacter.GetComponent<BaseCharacterManager>().displayName;
-            Destroy(nextCharacter);
+            nextCharacterName = characters[currentStage + 1];
+ 
+        }else
+        {
+            nextCharacterName = characters[0];
+        }
         foreach (Button nextButton in nextButtons)
-            {
-                nextButton.transform.GetComponentInChildren<Text>().text = "つぎは\n「" + nextCharacterName + "」";
-                nextButton.onClick.AddListener(() => SceneManager.GetComponent<Scene>().OnClickCharacter(currentStage + 1));
-            }
-
+        {
+            nextButton.transform.GetComponentInChildren<Text>().text = "つぎは\n「" + nextCharacterName + "」";
+            nextButton.onClick.AddListener(() => SceneManager.GetComponent<Scene>().OnClickCharacter(currentStage + 1));
         }
     }
 
@@ -257,7 +263,7 @@ public class GameManager : MonoBehaviour
 
 
         
-        string scoreMessage = $"はみでたのは {overCount} かいだよ\n";
+        string scoreMessage = $"はみでたのは <size=30><color=#bb0000>{overCount}</color></size> かいだよ\n";
         
         if(overCount == 0)
         {
@@ -293,6 +299,7 @@ public class GameManager : MonoBehaviour
         float strokeSize = Stroke.GetComponent<RectTransform>().rect.height * mag;
         
         bgColor = Camera.main.backgroundColor;
+        
         StartCoroutine(CaptureCorutine((int)strokeSize, (int)strokeSize));
     }
     //セーブ用のスプライトを生成するメソッド＿コルーチン
@@ -306,11 +313,15 @@ public class GameManager : MonoBehaviour
 
         Color[] colors = bufferTexture.GetPixels(x, y, width, height);
         saveTexture = new Texture2D(width, height, TextureFormat.ARGB32, false);
+
+
         
         for (int i = 0; i < colors.Length; i++)
         {
+            
             if (colors[i] == bgColor)
             {
+                
                 colors[i].a = 0.0f;
             }
         
@@ -324,9 +335,9 @@ public class GameManager : MonoBehaviour
         
         Stroke.SetActive(false);
         clearPanel.SetActive(true);
-        clearPanel.GetComponent<CanvasGroup>().DOFade(endValue: 1f, duration: 0.2f).SetEase(Ease.OutQuad).OnComplete(()=> {
-            scoreboard.transform.DOLocalMoveY(endValue:75.6f,duration:1f);
-            scoreboard.GetComponent<CanvasGroup>().DOFade(endValue: 1f, duration: 0.5f);
+        clearPanel.GetComponent<CanvasGroup>().DOFade(endValue: 1f, duration: 0.2f).SetEase(Ease.OutQuad).SetLink(clearPanel.gameObject).OnComplete(()=> {
+            scoreboard.transform.DOLocalMoveY(endValue:75.6f,duration:1f).SetLink(scoreboard.gameObject);
+            scoreboard.GetComponent<CanvasGroup>().DOFade(endValue: 1f, duration: 0.5f).SetLink(scoreboard.gameObject);
         });
     }
 
@@ -372,58 +383,26 @@ public class GameManager : MonoBehaviour
 
     public void DotweenFade(SpriteRenderer sprite,float endValue,float duration)
     {
-        sprite.material.DOFade(endValue: endValue, duration: duration);
+        sprite.material.DOFade(endValue: endValue, duration: duration).SetLink(sprite.gameObject);
     }
 
     public void DotweenFade(SpriteRenderer sprite, float endValue, float duration,int loop)
     {
-        sprite.material.DOFade(endValue: endValue, duration: duration).SetLoops(loop, LoopType.Yoyo).OnComplete(()=> {
+        sprite.material.DOFade(endValue: endValue, duration: duration).SetLink(sprite.gameObject).SetLoops(loop, LoopType.Yoyo).OnComplete(()=> {
             DotweenFade(sprite, 1.0f, 0.5f);
         });
     }
 
     public void DotweenFade(GameObject gObj, float endValue, float duration)
     {
-        gObj.GetComponent<SpriteRenderer>().material.DOFade(endValue: endValue, duration: duration).OnComplete(() =>
+        gObj.GetComponent<SpriteRenderer>().material.DOFade(endValue: endValue, duration: duration).SetLink(gObj).OnComplete(() =>
             {
                 Destroy(gObj);
             }
         );
     }
 
-    //不要メソッドになるかも
-    void _restart(int stage = 0)
-    {
-        overCount = 0;
-        currentStage = 0;
-        currentCharacterObject = Instantiate(allCharacters[currentStage].gameObject, CharactersWrapper.transform);
-        currentCharacterManager = currentCharacterObject.GetComponent<BaseCharacterManager>();
-        //最初の画数初期化
-        strokeCurrent = 0;
-        //最大画数画数
-        strokeMax = currentCharacterManager.startEnd_x_y.Count;
-        //最初のスタート位置（x,y）
-        startPosition = this._getPositions(currentCharacterManager.startEnd_x_y[strokeCurrent].List, "start");
-        //最初のゴール位置(x,y)
-        endPosition = this._getPositions(currentCharacterManager.startEnd_x_y[strokeCurrent].List, "end");
-
-        //次のボタン用処理
-        //nextButtonWrapper.SetActive(true);
-
-
-        this._viewNextButton();
-
-
-        //文字のコライダーのトリガーをtrueにする
-        currentCharacterObject.GetComponent<PolygonCollider2D>().isTrigger = true;
-        startFlag = false;
-        onBoardFlag = false;
-        enterGoal = false;
-        onPanelFlag = false;
-        this._viewStartAndGoal();
-        scoreboard.text = "";
-    }
-
+  
     public void ChangeColor(Color c)
     {
         Stroke.GetComponent<StrokeManager>().lineColor = c;
@@ -432,7 +411,36 @@ public class GameManager : MonoBehaviour
     public void ChangeWidth(float f)
     {
         Stroke.GetComponent<StrokeManager>().lineWidth = f;
+        foreach(Transform colorButton in ColorButtons)
+        {
+            switch (f)
+            {
+                case 0.12f:
+                    
+                    colorButton.localScale = new Vector2(0.8f, 0.8f);
+                    break;
+                case 0.25f:
+                    colorButton.localScale = new Vector2(1f, 1f);
+                    break;
+                case 0.5f:
+                    colorButton.localScale = new Vector2(1.2f, 1.2f);
+                    break;
+            }
+        }
     }
-
+    void LoadCharacterData()
+    {
+        string[] lines = stageFile.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
+        
+        foreach (string line in lines)
+        {
+            
+            string[] values = line.Split(new[] { ',' });
+            foreach (string v in values)
+            {
+                characters.Add(v);
+            }
+        }
+    }
 
 }

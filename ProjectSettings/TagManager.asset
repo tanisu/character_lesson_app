@@ -18,6 +18,8 @@ TagManager:
   - Spacer
   - Dialog
   - ScrollContent
+  - DrawImage
+  - Gomibako
   layers:
   - Default
   - TransparentFX

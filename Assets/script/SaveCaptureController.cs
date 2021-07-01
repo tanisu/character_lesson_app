@@ -10,8 +10,9 @@ using DG.Tweening;
 
 public class SaveCaptureController : MonoBehaviour
 {
-    //[SerializeField]
-    //private GameObject Stroke;
+
+    [SerializeField]
+    private GameObject ConfirmPanelWrapper;
     [SerializeField]
     private GameObject ConfirmPanel;
     [SerializeField]
@@ -41,7 +42,7 @@ public class SaveCaptureController : MonoBehaviour
             files = GetAllFiles();
             if (files.Count >= FILE_LIMIT_NUM)
             {
-                ConfirmPanel.SetActive(true);
+                ConfirmPanelWrapper.SetActive(true);
                 
                 ConfirmPanel.transform.GetChild(1).GetChild(0).GetComponent<Button>().onClick.AddListener(() => {
                     File.Delete(files[0]);
@@ -49,11 +50,11 @@ public class SaveCaptureController : MonoBehaviour
                     {
                         StartCoroutine("ViewSuccess");
                     }
-                    
-                    ConfirmPanel.SetActive(false);
+
+                    ConfirmPanelWrapper.SetActive(false);
                 } );
                 ConfirmPanel.transform.GetChild(1).GetChild(1).GetComponent<Button>().onClick.AddListener(() => {
-                    ConfirmPanel.SetActive(false);
+                    ConfirmPanelWrapper.SetActive(false);
                 });
 
             }
